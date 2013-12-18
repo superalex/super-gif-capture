@@ -1,6 +1,5 @@
 function init() {
   var bg = chrome.extension.getBackgroundPage();
-
   if (bg.screenshot.isProcessing) {
     bg.screenshot.stopProcessing();
   } else {

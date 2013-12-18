@@ -1,0 +1,108 @@
+<html>
+ <head>
+  <title> Super Gif Capture Options </title>
+  <meta charset="utf-8">
+  <style>
+  body {
+    font-family: arial, sans-serif;
+    margin:10px;
+    background: #EBEFF9;
+    font-size: 13px;
+  }
+  #header {
+    padding-bottom:1em;
+    padding-top:1em;
+  }
+  #header h1 {
+    font-size: 30px;
+    display: inline;
+    color: #3d5d6a;
+    padding-bottom: 40px;
+    padding-left: 90px;
+    padding-top: 70px;
+    background: url(images/icon_48.png) no-repeat;
+    background-position: 1px 62px;
+  }
+  h4 {
+    padding-left: 0.5em;
+    border-bottom: 2px dotted #c3c3c3;
+    color: #333333;
+    line-height: 28px;
+    font-size: 15px;
+  }
+
+  .contentBox {
+    background-color: #ffffff;
+    border: 3px solid #bec9ce;
+    border-bottom-left-radius: 20px 20px;
+    border-bottom-right-radius: 20px 20px;
+    border-top-left-radius: 20px 20px;
+    border-top-right-radius: 20px 20px;
+    padding: 30px;
+    text-align: left;
+    margin: 50px auto 20px auto;
+    height: auto;
+    width: 600px;
+  }
+  .clear {
+    clear: both;
+  }
+  .section-content {
+    padding-left: 55px;
+  }
+  .saveBtn {
+    margin: 20px 0 0 0;
+  }
+  #footer {
+    text-align: center;
+    font-size: 13px;
+  }
+  #error-info {
+    margin: 5px 0 5px 55px;
+    color: red;
+  }
+  label {
+    width: 175px;
+    display: inline-block;
+  }
+  input {
+    width: 50px;
+  }
+  button {
+    display: inline;
+  }
+
+  </style>
+ </head>
+<body>
+  <div class="contentBox">
+    <div id="header">
+     <h1 id="optionTitle">Super Gif Capture</h1>
+    </div>
+    <h4>Settings</h4>
+    <div class="section-content">
+     <div>
+       <label for="max-duration">Max duration (milliseconds):</label>
+       <input id="max-duration" type="text" name="max-duration">
+     </div>
+     <div class="clear"></div>
+     <div>
+       <label for="quality">Quality (0-100):</label>
+       <input id="quality" type="text" name="quality">
+     </div>
+     <div class="clear"></div>
+     <div>
+       <label for="fps">Frames per second:</label>
+       <input id="fps" type="text" name="fps">
+     </div>
+    </div>
+    <div id="error-info"></div>
+    <div class="saveBtn">
+        <button id="saveAndClose">Save & close</button>
+        <button id="reset">Reset</button>
+    </div>
+  </div>
+  <script src="js/ui.js"></script>
+  <script src="js/options.js"></script>
+</body>
+</html>

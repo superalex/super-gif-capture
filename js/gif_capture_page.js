@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var page = {
+var capturePage = {
   startX: 150,
   startY: 150,
   endX: 400,
@@ -38,12 +38,12 @@ var page = {
       if (window.getComputedStyle(body).overflowX == 'scroll')
         return true;
       return Math.abs(body.scrollWidth - docElement.clientWidth) >=
-          page.defaultScrollBarWidth;
+          capturePage.defaultScrollBarWidth;
     } else if (axis == 'y') {
       if (window.getComputedStyle(body).overflowY == 'scroll')
         return true;
       return Math.abs(body.scrollHeight - docElement.clientHeight) >=
-          page.defaultScrollBarWidth;
+          capturePage.defaultScrollBarWidth;
     }
   },
 
@@ -51,16 +51,16 @@ var page = {
     chrome.extension.sendMessage({ msg: 'original_view_port_width'},
       function(originalViewPortWidth) {
         if (originalViewPortWidth) {
-          page.originalViewPortWidth = page.hasScrollBar('y') ?
-            originalViewPortWidth - page.defaultScrollBarWidth : originalViewPortWidth;
+          capturePage.originalViewPortWidth = capturePage.hasScrollBar('y') ?
+            originalViewPortWidth - capturePage.defaultScrollBarWidth : originalViewPortWidth;
         } else {
-          page.originalViewPortWidth = document.documentElement.clientWidth;
+          capturePage.originalViewPortWidth = document.documentElement.clientWidth;
         }
       });
   },
 
   calculateSizeAfterZooming: function(originalSize) {
-    var originalViewPortWidth = page.originalViewPortWidth;
+    var originalViewPortWidth = capturePage.originalViewPortWidth;
     var currentViewPortWidth = document.documentElement.clientWidth;
     if (originalViewPortWidth == currentViewPortWidth)
       return originalSize;
@@ -69,7 +69,7 @@ var page = {
   },
 
   getZoomLevel: function() {
-    return page.originalViewPortWidth / document.documentElement.clientWidth;
+    return capturePage.originalViewPortWidth / document.documentElement.clientWidth;
   },
 
   getViewPortSize: function() {
@@ -91,30 +91,30 @@ var page = {
   */
   addMessageListener: function() {
     chrome.extension.onMessage.addListener(function(request, sender, response) {
-      if (page.isSelectionAreaTurnOn) {
-        page.removeSelectionArea();
+      if (capturePage.isSelectionAreaTurnOn) {
+        capturePage.removeSelectionArea();
       }
       switch (request.msg) {
-        case 'show_selection_area': page.showSelectionArea(); break;
-        case 'capture_selected':
-          var viewPortSize = page.getViewPortSize();
+        case 'show_selection_layer': capturePage.showSelectionArea(); break;
+        case 'capture_selected_area':
+          var viewPortSize = capturePage.getViewPortSize();
           var docWidth = document.body.scrollWidth;
           var docHeight = document.body.scrollHeight;
           response({
             'msg': 'capture_selected',
-            'startX': page.calculateSizeAfterZooming(page.startX),
-            'startY': page.calculateSizeAfterZooming(page.startY),
+            'startX': capturePage.calculateSizeAfterZooming(capturePage.startX),
+            'startY': capturePage.calculateSizeAfterZooming(capturePage.startY),
             'scrollX': window.scrollX,
             'scrollY': window.scrollY,
             'docHeight': docHeight,
             'docWidth': docWidth,
             'visibleWidth': viewPortSize.width,
             'visibleHeight': viewPortSize.height,
-            'canvasWidth': page.calculateSizeAfterZooming(page.endX - page.startX),
-            'canvasHeight': page.calculateSizeAfterZooming(page.endY - page.startY),
+            'canvasWidth': capturePage.calculateSizeAfterZooming(capturePage.endX - capturePage.startX),
+            'canvasHeight': capturePage.calculateSizeAfterZooming(capturePage.endY - capturePage.startY),
             'scrollXCount': 0,
             'scrollYCount': 0,
-            'zoom': page.getZoomLevel()
+            'zoom': capturePage.getZoomLevel()
           });
           break;
 
@@ -133,8 +133,8 @@ var page = {
   * Show the selection Area
   */
   showSelectionArea: function() {
-    page.createFloatLayer();
-    setTimeout(page.createSelectionArea, 100);
+    capturePage.createFloatLayer();
+    setTimeout(capturePage.createSelectionArea, 100);
   },
 
   getWindowSize: function() {
@@ -146,14 +146,14 @@ var page = {
   },
 
   getSelectionSize: function() {
-    page.removeSelectionArea();
+    capturePage.removeSelectionArea();
     setTimeout(function() {
-      page.sendMessage({
+      capturePage.sendMessage({
         'msg': 'capture_selected',
-        'x': page.startX,
-        'y': page.startY,
-        'width': page.endX - page.startX,
-        'height': page.endY - page.startY,
+        'x': capturePage.startX,
+        'y': capturePage.startY,
+        'width': capturePage.endX - capturePage.startX,
+        'height': capturePage.endY - capturePage.startY,
         'visibleWidth': document.documentElement.clientWidth,
         'visibleHeight': document.documentElement.clientHeight,
         'docWidth': document.body.clientWidth,
@@ -165,7 +165,7 @@ var page = {
   * Create a float layer on the webpage
   */
   createFloatLayer: function() {
-    page.createDiv(document.body, 'sc_drag_area_protector');
+    capturePage.createDiv(document.body, 'sc_drag_area_protector');
   },
 
   matchMarginValue: function(str) {
@@ -177,78 +177,78 @@ var page = {
   */
   createSelectionArea: function() {
     var areaProtector = $('sc_drag_area_protector');
-    var zoom = page.getZoomLevel();
+    var zoom = capturePage.getZoomLevel();
     var bodyStyle = window.getComputedStyle(document.body, null);
     if ('relative' == bodyStyle['position']) {
-      page.marginTop = page.matchMarginValue(bodyStyle['marginTop']);
-      page.marginLeft = page.matchMarginValue(bodyStyle['marginLeft']);
-      areaProtector.style.top =  - parseInt(page.marginTop) + 'px';
-      areaProtector.style.left =  - parseInt(page.marginLeft) + 'px';
+      capturePage.marginTop = capturePage.matchMarginValue(bodyStyle['marginTop']);
+      capturePage.marginLeft = capturePage.matchMarginValue(bodyStyle['marginLeft']);
+      areaProtector.style.top =  - parseInt(capturePage.marginTop) + 'px';
+      areaProtector.style.left =  - parseInt(capturePage.marginLeft) + 'px';
     }
     areaProtector.style.width =
-      Math.round((document.body.clientWidth + parseInt(page.marginLeft)) / zoom) + 'px';
+      Math.round((document.body.clientWidth + parseInt(capturePage.marginLeft)) / zoom) + 'px';
     areaProtector.style.height =
-      Math.round((document.body.clientHeight + parseInt(page.marginTop)) / zoom) + 'px';
+      Math.round((document.body.clientHeight + parseInt(capturePage.marginTop)) / zoom) + 'px';
     areaProtector.onclick = function() {
       event.stopPropagation();
       return false;
     };
 
     // Create elements for area capture.
-    page.createDiv(areaProtector, 'sc_drag_shadow_top');
-    page.createDiv(areaProtector, 'sc_drag_shadow_bottom');
-    page.createDiv(areaProtector, 'sc_drag_shadow_left');
-    page.createDiv(areaProtector, 'sc_drag_shadow_right');
+    capturePage.createDiv(areaProtector, 'sc_drag_shadow_top');
+    capturePage.createDiv(areaProtector, 'sc_drag_shadow_bottom');
+    capturePage.createDiv(areaProtector, 'sc_drag_shadow_left');
+    capturePage.createDiv(areaProtector, 'sc_drag_shadow_right');
 
-    var areaElement = page.createDiv(areaProtector, 'sc_drag_area');
-    page.createDiv(areaElement, 'sc_drag_container');
-    page.createDiv(areaElement, 'sc_drag_size');
+    var areaElement = capturePage.createDiv(areaProtector, 'sc_drag_area');
+    capturePage.createDiv(areaElement, 'sc_drag_container');
+    capturePage.createDiv(areaElement, 'sc_drag_size');
 
     // Add event listener for 'cancel' and 'capture' button.
-    var cancel = page.createDiv(areaElement, 'sc_drag_cancel');
+    var cancel = capturePage.createDiv(areaElement, 'sc_drag_cancel');
     cancel.addEventListener('mousedown', function () {
       // Remove area capture containers and event listeners.
-      page.removeSelectionArea();
+      capturePage.removeSelectionArea();
     }, true);
     cancel.innerHTML = "cancel";
 
-    var crop = page.createDiv(areaElement, 'sc_drag_crop');
+    var crop = capturePage.createDiv(areaElement, 'sc_drag_crop');
     crop.addEventListener('mousedown', function() {
-      page.removeSelectionArea();
-      page.sendMessage({msg: 'capture_selected'});
+      capturePage.removeSelectionArea();
+      capturePage.sendMessage({msg: 'capture_selected'});
     }, false);
     crop.innerHTML = 'ok';
 
-    page.createDiv(areaElement, 'sc_drag_north_west');
-    page.createDiv(areaElement, 'sc_drag_north_east');
-    page.createDiv(areaElement, 'sc_drag_south_east');
-    page.createDiv(areaElement, 'sc_drag_south_west');
+    capturePage.createDiv(areaElement, 'sc_drag_north_west');
+    capturePage.createDiv(areaElement, 'sc_drag_north_east');
+    capturePage.createDiv(areaElement, 'sc_drag_south_east');
+    capturePage.createDiv(areaElement, 'sc_drag_south_west');
 
-    areaProtector.addEventListener('mousedown', page.onMouseDown, false);
-    document.addEventListener('mousemove', page.onMouseMove, false);
-    document.addEventListener('mouseup', page.onMouseUp, false);
+    areaProtector.addEventListener('mousedown', capturePage.onMouseDown, false);
+    document.addEventListener('mousemove', capturePage.onMouseMove, false);
+    document.addEventListener('mouseup', capturePage.onMouseUp, false);
     $('sc_drag_container').addEventListener('dblclick', function() {
-      page.removeSelectionArea();
-      page.sendMessage({msg: 'capture_selected'});
+      capturePage.removeSelectionArea();
+      capturePage.sendMessage({msg: 'capture_selected'});
     }, false);
 
-    page.pageHeight = $('sc_drag_area_protector').clientHeight;
-    page.pageWidth = $('sc_drag_area_protector').clientWidth;
+    capturePage.pageHeight = $('sc_drag_area_protector').clientHeight;
+    capturePage.pageWidth = $('sc_drag_area_protector').clientWidth;
 
     var areaElement = $('sc_drag_area');
-    areaElement.style.left = page.getElementLeft(areaElement) + 'px';
-    areaElement.style.top = page.getElementTop(areaElement) + 'px';
+    areaElement.style.left = capturePage.getElementLeft(areaElement) + 'px';
+    areaElement.style.top = capturePage.getElementTop(areaElement) + 'px';
 
-    page.startX = page.getElementLeft(areaElement);
-    page.startY = page.getElementTop(areaElement);
-    page.endX = page.getElementLeft(areaElement) + 250;
-    page.endY = page.getElementTop(areaElement) + 150;
+    capturePage.startX = capturePage.getElementLeft(areaElement);
+    capturePage.startY = capturePage.getElementTop(areaElement);
+    capturePage.endX = capturePage.getElementLeft(areaElement) + 250;
+    capturePage.endY = capturePage.getElementTop(areaElement) + 150;
 
     areaElement.style.width = '250px';
     areaElement.style.height = '150px';
-    page.isSelectionAreaTurnOn = true;
-    page.updateShadow(areaElement);
-    page.updateSize();
+    capturePage.isSelectionAreaTurnOn = true;
+    capturePage.updateShadow(areaElement);
+    capturePage.updateSize();
   },
 
   getElementLeft: function(obj) {
@@ -273,7 +273,7 @@ var page = {
       if (element) {
         var elementName = element.tagName;
         if (elementName && document) {
-          page.isMouseDown = true;
+          capturePage.isMouseDown = true;
 
           var areaElement = $('sc_drag_area');
           var xPosition = event.pageX;
@@ -281,31 +281,31 @@ var page = {
 
           if (areaElement) {
             if (element == $('sc_drag_container')) {
-              page.moving = true;
-              page.moveX = xPosition - areaElement.offsetLeft;
-              page.moveY = yPosition - areaElement.offsetTop;
+              capturePage.moving = true;
+              capturePage.moveX = xPosition - areaElement.offsetLeft;
+              capturePage.moveY = yPosition - areaElement.offsetTop;
             } else if (element == $('sc_drag_north_east')) {
-              page.resizing = true;
-              page.startX = areaElement.offsetLeft;
-              page.startY = areaElement.offsetTop + areaElement.clientHeight;
+              capturePage.resizing = true;
+              capturePage.startX = areaElement.offsetLeft;
+              capturePage.startY = areaElement.offsetTop + areaElement.clientHeight;
             } else if (element == $('sc_drag_north_west')) {
-              page.resizing = true;
-              page.startX = areaElement.offsetLeft + areaElement.clientWidth;
-              page.startY = areaElement.offsetTop + areaElement.clientHeight;
+              capturePage.resizing = true;
+              capturePage.startX = areaElement.offsetLeft + areaElement.clientWidth;
+              capturePage.startY = areaElement.offsetTop + areaElement.clientHeight;
             } else if (element == $('sc_drag_south_east')) {
-              page.resizing = true;
-              page.startX = areaElement.offsetLeft;
-              page.startY = areaElement.offsetTop;
+              capturePage.resizing = true;
+              capturePage.startX = areaElement.offsetLeft;
+              capturePage.startY = areaElement.offsetTop;
             } else if (element == $('sc_drag_south_west')) {
-              page.resizing = true;
-              page.startX = areaElement.offsetLeft + areaElement.clientWidth;
-              page.startY = areaElement.offsetTop;
+              capturePage.resizing = true;
+              capturePage.startX = areaElement.offsetLeft + areaElement.clientWidth;
+              capturePage.startY = areaElement.offsetTop;
             } else {
-              page.dragging = true;
-              page.endX = 0;
-              page.endY = 0;
-              page.endX = page.startX = xPosition;
-              page.endY = page.startY = yPosition;
+              capturePage.dragging = true;
+              capturePage.endX = 0;
+              capturePage.endY = 0;
+              capturePage.endX = capturePage.startX = xPosition;
+              capturePage.endY = capturePage.startY = yPosition;
             }
           }
           event.preventDefault();
@@ -319,15 +319,15 @@ var page = {
   */
   onMouseMove: function() {
     var element = event.target;
-    if (element && page.isMouseDown) {
+    if (element && capturePage.isMouseDown) {
       var areaElement = $('sc_drag_area');
       if (areaElement) {
         var xPosition = event.pageX;
         var yPosition = event.pageY;
-        if (page.dragging || page.resizing) {
+        if (capturePage.dragging || capturePage.resizing) {
           var width = 0;
           var height = 0;
-          var zoom = page.getZoomLevel();
+          var zoom = capturePage.getZoomLevel();
           var viewWidth = Math.round(document.body.clientWidth / zoom);
           var viewHeight = Math.round(document.body.clientHeight / zoom);
           if (xPosition > viewWidth) {
@@ -340,21 +340,21 @@ var page = {
           } else if (yPosition < 0) {
             yPosition = 0;
           }
-          page.endX = xPosition;
-          page.endY = yPosition;
-          if (page.startX > page.endX) {
-            width = page.startX - page.endX;
+          capturePage.endX = xPosition;
+          capturePage.endY = yPosition;
+          if (capturePage.startX > capturePage.endX) {
+            width = capturePage.startX - capturePage.endX;
             areaElement.style.left = xPosition + 'px';
           } else {
-            width = page.endX - page.startX;
-            areaElement.style.left = page.startX + 'px';
+            width = capturePage.endX - capturePage.startX;
+            areaElement.style.left = capturePage.startX + 'px';
           }
-          if (page.startY > page.endY) {
-            height = page.startY - page.endY;
-            areaElement.style.top = page.endY + 'px';
+          if (capturePage.startY > capturePage.endY) {
+            height = capturePage.startY - capturePage.endY;
+            areaElement.style.top = capturePage.endY + 'px';
           } else {
-            height = page.endY - page.startY;
-            areaElement.style.top = page.startY + 'px';
+            height = capturePage.endY - capturePage.startY;
+            areaElement.style.top = capturePage.startY + 'px';
           }
           areaElement.style.height = height + 'px';
           areaElement.style.width  = width + 'px';
@@ -367,27 +367,27 @@ var page = {
           if (yPosition < document.body.scrollTop) {
             document.body.scrollTop -= 25;
           }
-        } else if (page.moving) {
-          var newXPosition = xPosition - page.moveX;
-          var newYPosition = yPosition - page.moveY;
+        } else if (capturePage.moving) {
+          var newXPosition = xPosition - capturePage.moveX;
+          var newYPosition = yPosition - capturePage.moveY;
           if (newXPosition < 0) {
             newXPosition = 0;
-          } else if (newXPosition + areaElement.clientWidth > page.pageWidth) {
-            newXPosition = page.pageWidth - areaElement.clientWidth;
+          } else if (newXPosition + areaElement.clientWidth > capturePage.pageWidth) {
+            newXPosition = capturePage.pageWidth - areaElement.clientWidth;
           }
           if (newYPosition < 0) {
             newYPosition = 0;
           } else if (newYPosition + areaElement.clientHeight >
-                     page.pageHeight) {
-            newYPosition = page.pageHeight - areaElement.clientHeight;
+                     capturePage.pageHeight) {
+            newYPosition = capturePage.pageHeight - areaElement.clientHeight;
           }
 
           areaElement.style.left = newXPosition + 'px';
           areaElement.style.top = newYPosition + 'px';
-          page.endX = newXPosition + areaElement.clientWidth;
-          page.startX = newXPosition;
-          page.endY = newYPosition + areaElement.clientHeight;
-          page.startY = newYPosition;
+          capturePage.endX = newXPosition + areaElement.clientWidth;
+          capturePage.startX = newXPosition;
+          capturePage.endY = newYPosition + areaElement.clientHeight;
+          capturePage.startY = newYPosition;
 
         }
         var crop = document.getElementById('sc_drag_crop');
@@ -406,8 +406,8 @@ var page = {
         } else {
           dragSizeContainer.style.top = '-18px';
         }
-        page.updateShadow(areaElement);
-        page.updateSize();
+        capturePage.updateShadow(areaElement);
+        capturePage.updateSize();
 
       }
     }
@@ -417,23 +417,23 @@ var page = {
   * Fix the selection area position when mouse up
   */
   onMouseUp: function() {
-    page.isMouseDown = false;
+    capturePage.isMouseDown = false;
     if (event.button != 2) {
-      page.resizing = false;
-      page.dragging = false;
-      page.moving = false;
-      page.moveX = 0;
-      page.moveY = 0;
+      capturePage.resizing = false;
+      capturePage.dragging = false;
+      capturePage.moving = false;
+      capturePage.moveX = 0;
+      capturePage.moveY = 0;
       var temp;
-      if (page.endX < page.startX) {
-        temp = page.endX;
-        page.endX = page.startX;
-        page.startX = temp;
+      if (capturePage.endX < capturePage.startX) {
+        temp = capturePage.endX;
+        capturePage.endX = capturePage.startX;
+        capturePage.startX = temp;
       }
-      if (page.endY < page.startY) {
-        temp = page.endY;
-        page.endY = page.startY;
-        page.startY = temp;
+      if (capturePage.endY < capturePage.startY) {
+        temp = capturePage.endY;
+        capturePage.endY = capturePage.startY;
+        capturePage.startY = temp;
       }
     }
   },
@@ -447,23 +447,23 @@ var page = {
     $('sc_drag_shadow_top').style.width = (parseInt(areaElement.style.left) +
         parseInt(areaElement.style.width) + 1) + 'px';
     $('sc_drag_shadow_left').style.height =
-        (page.pageHeight - parseInt(areaElement.style.top)) + 'px';
+        (capturePage.pageHeight - parseInt(areaElement.style.top)) + 'px';
     $('sc_drag_shadow_left').style.width =
         parseInt(areaElement.style.left) + 'px';
 
     var height = (parseInt(areaElement.style.top) +
         parseInt(areaElement.style.height) + 1);
     height = (height < 0) ? 0 : height;
-    var width = (page.pageWidth) - 1 - (parseInt(areaElement.style.left) +
+    var width = (capturePage.pageWidth) - 1 - (parseInt(areaElement.style.left) +
         parseInt(areaElement.style.width));
     width = (width < 0) ? 0 : width;
     $('sc_drag_shadow_right').style.height = height + 'px';
     $('sc_drag_shadow_right').style.width =  width + 'px';
 
-    height = (page.pageHeight - 1 - (parseInt(areaElement.style.top) +
+    height = (capturePage.pageHeight - 1 - (parseInt(areaElement.style.top) +
         parseInt(areaElement.style.height)));
     height = (height < 0) ? 0 : height;
-    width = (page.pageWidth) - parseInt(areaElement.style.left);
+    width = (capturePage.pageWidth) - parseInt(areaElement.style.left);
     width = (width < 0) ? 0 : width;
     $('sc_drag_shadow_bottom').style.height = height + 'px';
     $('sc_drag_shadow_bottom').style.width = width + 'px';
@@ -473,25 +473,25 @@ var page = {
   * Remove selection area
   */
   removeSelectionArea: function() {
-    document.removeEventListener('mousedown', page.onMouseDown, false);
-    document.removeEventListener('mousemove', page.onMouseMove, false);
-    document.removeEventListener('mouseup', page.onMouseUp, false);
+    document.removeEventListener('mousedown', capturePage.onMouseDown, false);
+    document.removeEventListener('mousemove', capturePage.onMouseMove, false);
+    document.removeEventListener('mouseup', capturePage.onMouseUp, false);
     $('sc_drag_container').removeEventListener('dblclick',function() {
-      page.removeSelectionArea();
-      page.sendMessage({msg: 'capture_selected'});}, false);
-    page.removeElement('sc_drag_area_protector');
-    page.removeElement('sc_drag_area');
-    page.isSelectionAreaTurnOn = false;
+      capturePage.removeSelectionArea();
+      capturePage.sendMessage({msg: 'capture_selected'});}, false);
+    capturePage.removeElement('sc_drag_area_protector');
+    capturePage.removeElement('sc_drag_area');
+    capturePage.isSelectionAreaTurnOn = false;
   },
 
   /**
   * Refresh the size info
   */
   updateSize: function() {
-    var width = Math.abs(page.endX - page.startX);
-    var height = Math.abs(page.endY - page.startY);
-    $('sc_drag_size').innerText = page.calculateSizeAfterZooming(width) +
-      ' x ' + page.calculateSizeAfterZooming(height);
+    var width = Math.abs(capturePage.endX - capturePage.startX);
+    var height = Math.abs(capturePage.endY - capturePage.startY);
+    $('sc_drag_size').innerText = capturePage.calculateSizeAfterZooming(width) +
+      ' x ' + capturePage.calculateSizeAfterZooming(height);
   },
 
   /**
@@ -543,7 +543,7 @@ var page = {
     this.injectJavaScriptResource("js/page_context.js");
 
     // Retrieve original width of view port and cache.
-    page.getOriginalViewPortWidth();
+    capturePage.getOriginalViewPortWidth();
   }
 };
 
@@ -552,14 +552,14 @@ function $(id) {
   return document.getElementById(id);
 }
 
-page.init();
+capturePage.init();
 
 window.addEventListener('resize', function() {
-  if (page.isSelectionAreaTurnOn) {
-    page.removeSelectionArea();
-    page.showSelectionArea();
+  if (capturePage.isSelectionAreaTurnOn) {
+    capturePage.removeSelectionArea();
+    capturePage.showSelectionArea();
   }
 
   // Reget original width of view port if browser window resized or page zoomed.
-  page.getOriginalViewPortWidth();
+  capturePage.getOriginalViewPortWidth();
 }, false);

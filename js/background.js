@@ -3,8 +3,9 @@
 // LICENSE file.
 
 var screenshot = {
-  QUALITY: 50,
-  FPS: 5,
+  MAX_TIME: parseInt(localStorage.maxDuration) || 15000,
+  QUALITY: parseInt(localStorage.quality) || 50,
+  FPS: parseInt(localStorage.fps) || 5,
   tab: 0,
   canvas: document.createElement("canvas"),
   startX: 0,
@@ -55,11 +56,11 @@ var screenshot = {
   },
 
   showSelectionArea: function() {
-    screenshot.sendMessage({msg: 'show_selection_area'}, null);
+    screenshot.sendMessage({msg: 'show_selection_layer'}, null);
   },
 
   captureSelected: function() {
-    screenshot.sendMessage({msg: 'capture_selected'},
+    screenshot.sendMessage({msg: 'capture_selected_area'},
         screenshot.onResponseVisibleSize);
   },
 
@@ -90,7 +91,7 @@ var screenshot = {
         chrome.tabs.getAllInWindow(wins[j].id, function(tabs) {
           for (var i = 0; i < tabs.length; ++i) {
             if (tabs[i].url.indexOf("chrome://") != 0) {
-              chrome.tabs.executeScript(tabs[i].id, { file: 'js/page.js' });
+              chrome.tabs.executeScript(tabs[i].id, { file: 'js/gif_capture_page.js' });
             }
           }
         });
@@ -128,6 +129,12 @@ var screenshot = {
           }
       });
     }, 1000 / screenshot.FPS);
+
+    // Set up a timer for stoping infinite gifs
+    setTimeout(function() {
+      screenshot.stopRecording();
+    }, screenshot.MAX_TIME);
+
   },
 
   stopRecording: function() {

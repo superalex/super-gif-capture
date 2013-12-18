@@ -12,7 +12,7 @@
   },
   "content_scripts": [ {
     "matches": ["http://*/*", "https://*/*", "ftp://*/*", "file://*/*"],
-    "js": ["js/page.js"],
+    "js": ["js/gif_capture_page.js"],
     "css": ["style.css"],
     "run_at": "document_end"
   }, {
@@ -28,6 +28,7 @@
     "32": "images/icon_32.png",
     "48": "images/icon_48.png"
   },
+  "options_page": "options.html",
   "manifest_version": 2,
   "permissions": ["tabs", "http://*/*", "https://*/*"],
   "web_accessible_resources": [
