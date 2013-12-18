@@ -1,7 +1,3 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
-
 var screenshot = {
   QUALITY: 50,
   FPS: 5,
@@ -21,10 +17,12 @@ var screenshot = {
   scrollBarY: 17,
   captureStatus: true,
   isRecording: false,
-  images: [],
+  isProcessing: false,
   timer: null,
   binary_gif: null,
   imageDataBase_64: null,
+  processingWorker: null,
+  isProcessing: false,
 
   /**
   * Receive messages from content_script, and then decide what to do next
@@ -53,7 +51,6 @@ var screenshot = {
   },
 
   showSelectionArea: function() {
-    //alert("show_selection_area *******4");
     screenshot.sendMessage({msg: 'show_selection_area'}, null);
   },
 
@@ -98,60 +95,72 @@ var screenshot = {
   },
 
   startRecording: function() {
+    chrome.browserAction.setBadgeText({'text': 'REC'});
+    chrome.browserAction.setTitle({title: 'Stop recording.'});
+
+    screenshot.processingWorker = new Worker("js/processingWorker.js");
     screenshot.isRecording = true;
-    //Update icon to show that it's recording
-    //chrome.browserAction.setIcon({path: 'images/icon-rec.png'});
-    //chrome.browserAction.setTitle({title: 'Stop recording.'});
-    images = [];
+
     // Set up a timer to regularly get screengrabs
-    timer = setInterval(function() {
-      chrome.tabs.captureVisibleTab(null, {quality: screenshot.QUALITY}, function(img) {
-          if (img !== undefined){
-            images.push(img);
+    screenshot.timer = setInterval(function() {
+      chrome.tabs.captureVisibleTab(null, {quality: screenshot.QUALITY}, function(imageData) {
+          if (imageData !== undefined){
+            var ctx = screenshot.canvas.getContext("2d");
+            var x = screenshot.startX - screenshot.scrollX;
+            var y = screenshot.startY - screenshot.scrollY;
+            var width = screenshot.canvas.width;
+            var height = screenshot.canvas.height;
+            var image = new Image();
+            image.src = imageData;
+            ctx.drawImage(image, x, y, width, height, 0, 0, width, height);
+            var imageData = ctx.getImageData(0, 0, width, height).data;
+            var imarray = [];
+
+            for(var i = 0; i < imageData.length; i++){
+              imarray.push(imageData[i]);
+            }
+            var serializedImageData = imarray.join(',');
+            screenshot.processingWorker.postMessage({'cmd': 'addImage', 'serializedImageData':serializedImageData });
           }
       });
     }, 1000 / screenshot.FPS);
-    chrome.browserAction.setBadgeText({'text': 'REC'});
   },
 
   stopRecording: function() {
+    chrome.browserAction.setBadgeText({'text': "--%"});
+    chrome.browserAction.setTitle({title: 'Stop processing.'});
     // Stop the timer
-    clearInterval(timer);
+    clearInterval(screenshot.timer);
 
-    //Generate gif
-    var x = screenshot.startX - screenshot.scrollX;
-    var y = screenshot.startY - screenshot.scrollY;
-    var binary_gif = screenshot.encodeGif(x, y, screenshot.canvas.width, screenshot.canvas.height);
-    screenshot.binary_gif = binary_gif;
-    screenshot.imageDataBase_64 = 'data:image/gif;base64,'+encode64(binary_gif);
+    screenshot.processingWorker.addEventListener('message', function(e) {
+      var data = e.data;
+      switch (data.cmd) {
+        case 'progress':
+          chrome.browserAction.setBadgeText({'text': data.progress + "%"});
+          break;
 
-    // Update icon to show regular icon
-    //chrome.browserAction.setIcon({path: 'images/icon.png'});
-    //chrome.browserAction.setTitle({title: 'Start recording.'});
+        case 'processed':
+          screenshot.binary_gif = data.gif;
+          screenshot.imageDataBase_64 = 'data:image/gif;base64,'+encode64(screenshot.binary_gif);
+          chrome.tabs.create({'url': 'show_gif.html'});
+          screenshot.isRecording = false;
+          screenshot.stopProcessing();
+          break;
+      };
+    }, false);
 
-    chrome.tabs.create({'url': 'show_gif.html'});
-    screenshot.isRecording = false;
+    screenshot.isProcessing = true;
+    var width = screenshot.canvas.width;
+    var height = screenshot.canvas.height;
+    screenshot.processingWorker.postMessage({'cmd': 'process', 'width': width, 'height': height, 'fps': screenshot.FPS});
   },
 
-  encodeGif: function (x, y, width, height, processingCallback){
-    var ctx = screenshot.canvas.getContext("2d");
-    var encoder = new GIFEncoder();
-    encoder.setRepeat(0); //0  -> loop forever, 1+ -> loop n times then stop
-    encoder.setDelay(1000 / screenshot.FPS); //go to next frame every n milliseconds
-    encoder.start();
-
-    for (var index = 0; index < images.length; index++) {
-      chrome.browserAction.setBadgeText({'text': Math.round((index+1) * 100 / images.length)  + "%"});
-      var imageData = images[index];
-      var image = new Image();
-      image.src = imageData;
-      ctx.drawImage(image,x, y, width, height, 0, 0, width, height);
-      encoder.addFrame(ctx);
-      console.log(index+1, images.length);
-    }
-    encoder.finish();
+  stopProcessing: function() {
+    screenshot.processingWorker.terminate();
     chrome.browserAction.setBadgeText({'text': ''});
-    return encoder.stream().getData();
+    chrome.browserAction.setTitle({title: 'Start recording.'});
+    screenshot.isProcessing = false;
+    screenshot.isRecording = false;
   },
 
   init: function() {

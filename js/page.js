@@ -1,6 +1,3 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 var page = {
   startX: 150,
   startY: 150,
@@ -93,7 +90,6 @@ var page = {
       if (page.isSelectionAreaTurnOn) {
         page.removeSelectionArea();
       }
-      //alert("Page message listener " + request.msg);
       switch (request.msg) {
         case 'show_selection_area': page.showSelectionArea(); break;
         case 'capture_selected':
@@ -126,7 +122,6 @@ var page = {
   * Send Message to background page
   */
   sendMessage: function(message) {
-    //alert("Page message sender " + message.msg);
     chrome.extension.sendMessage(message);
   },
 

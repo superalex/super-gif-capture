@@ -7,7 +7,7 @@
   },
   "browser_action": {
     "default_icon": "images/icon_19.png",
-    "default_title": "__MSG_default_title__",
+    "default_title": "Start capture",
     "default_popup": "popup.html"
   },
   "content_scripts": [ {

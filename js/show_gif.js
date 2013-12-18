@@ -1,3 +1,5 @@
+window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
+
 function $(id) {
   return document.getElementById(id);
 }
@@ -9,13 +11,7 @@ var gifViewer = {
   downloadLink: $("download"),
   image: document.createElement("img"),
 
-  init: function(){
-    console.log(bg.screenshot.imageDataBase_64);
-    gifViewer.image.src = bg.screenshot.imageDataBase_64;
-    document.body.appendChild(gifViewer.image);
-
-    window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
-
+  generateDownloadLink: function(){
     // Handle errors
     function errorHandler(e) {
         var msg = '';
@@ -40,7 +36,6 @@ var gifViewer = {
                 msg = 'Unknown Error';
                 break;
         };
-        console.log('Error: ' + msg);
     }
 
     function dataURItoBlob(dataURI, callback) {
@@ -63,7 +58,7 @@ var gifViewer = {
         return bb;
     }
 
-    // Init and write some data to a file
+    // Init and write gif data to file
     function onInitFs(fs) {
         fs.root.getFile('capture.gif', {create: true}, function(fileEntry) {
             gifViewer.downloadLink.href = fileEntry.toURL();
@@ -80,7 +75,6 @@ var gifViewer = {
                     console.log('Write failed: ' + e);
                 };
 
-                //var bb = new Blob(["some stuff", 'put some nice text in our file....']);
                 var bb = dataURItoBlob(bg.screenshot.imageDataBase_64);
                 fileWriter.write(bb);
 
@@ -89,8 +83,13 @@ var gifViewer = {
     }
 
     // start the party
-    window.requestFileSystem(window.TEMPORARY, 1024*1024*1024, onInitFs,errorHandler);
+    window.requestFileSystem(window.TEMPORARY, 0, onInitFs,errorHandler);
+  },
 
+  init: function(){
+    gifViewer.image.src = bg.screenshot.imageDataBase_64;
+    document.body.appendChild(gifViewer.image);
+    gifViewer.generateDownloadLink();
   },
 }
 
