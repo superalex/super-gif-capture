@@ -88,7 +88,7 @@ var gifViewer = {
 
   init: function(){
     gifViewer.image.src = bg.screenshot.imageDataBase_64;
-    document.body.appendChild(gifViewer.image);
+    $("container").appendChild(gifViewer.image);
     gifViewer.generateDownloadLink();
   },
 }

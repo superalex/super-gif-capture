@@ -3,9 +3,6 @@
 // LICENSE file.
 
 var screenshot = {
-  MAX_TIME: parseInt(localStorage.maxDuration) || 15000,
-  QUALITY: parseInt(localStorage.quality) || 50,
-  FPS: parseInt(localStorage.fps) || 5,
   tab: 0,
   canvas: document.createElement("canvas"),
   startX: 0,
@@ -99,7 +96,15 @@ var screenshot = {
     });
   },
 
+  readSettings: function() {
+      console.log("readSettings");
+    screenshot.MAX_TIME = parseInt(localStorage.maxDuration) || 15000;
+    screenshot.QUALITY = parseInt(localStorage.quality) || 50;
+    screenshot.FPS = parseInt(localStorage.fps) || 5;
+  },
+
   startRecording: function() {
+    screenshot.readSettings();
     chrome.browserAction.setBadgeText({'text': 'REC'});
     chrome.browserAction.setTitle({title: 'Stop recording.'});
 
@@ -175,6 +180,7 @@ var screenshot = {
   },
 
   init: function() {
+    screenshot.readSettings();
     screenshot.executeScriptsInExistingTabs();
     screenshot.addMessageListener();
   }

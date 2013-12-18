@@ -535,7 +535,7 @@ var capturePage = {
   * Remove an element
   */
   init: function() {
-    if (document.body.hasAttribute('screen_capture_injected')) {
+    if (document.body.hasAttribute('gif_screen_capture_injected')) {
       return;
     }
     this.injectCssResource('style.css');
