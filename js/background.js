@@ -97,7 +97,6 @@ var screenshot = {
   },
 
   readSettings: function() {
-      console.log("readSettings");
     screenshot.MAX_TIME = parseInt(localStorage.maxDuration) || 15000;
     screenshot.QUALITY = parseInt(localStorage.quality) || 50;
     screenshot.FPS = parseInt(localStorage.fps) || 5;
