@@ -136,7 +136,9 @@ var screenshot = {
 
     // Set up a timer for stoping infinite gifs
     setTimeout(function() {
-      screenshot.stopRecording();
+      if (!screenshot.isRecording){
+        screenshot.stopRecording();
+      }
     }, screenshot.MAX_TIME);
 
   },
