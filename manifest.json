@@ -1,11 +1,10 @@
 {
-  "version": "1.0.5",
+  "version": "1.0.6",
   "default_locale": "en",
   "name": "__MSG_appName__",
   "description": "__MSG_appDesc__",
   "background": {
-    "page": "background.html",
-    "persistent": false
+    "page": "background.html"
   },
   "browser_action": {
     "default_icon": "images/icon_19.png",
