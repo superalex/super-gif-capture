@@ -1,0 +1,10 @@
+﻿{
+  "appName": {
+    "message": "Super Gif Capture",
+    "description": "The title of the application, displayed in the web store."
+  },
+  "appDesc": {
+    "message": "Generates easily and in a few clicks an animated gif from the selected content of a page.",
+    "description":"The description of the application, displayed in the web store."
+  }
+}
