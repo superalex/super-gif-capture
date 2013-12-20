@@ -144,6 +144,7 @@ var screenshot = {
   },
 
   stopRecording: function() {
+    screenshot.isRecording = false;
     chrome.browserAction.setBadgeText({'text': "--%"});
     chrome.browserAction.setTitle({title: 'Stop processing.'});
     // Stop the timer
@@ -160,7 +161,6 @@ var screenshot = {
           screenshot.binary_gif = data.gif;
           screenshot.imageDataBase_64 = 'data:image/gif;base64,'+encode64(screenshot.binary_gif);
           chrome.tabs.create({'url': 'show_gif.html'});
-          screenshot.isRecording = false;
           screenshot.stopProcessing();
           break;
       };
