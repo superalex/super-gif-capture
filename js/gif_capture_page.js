@@ -186,9 +186,9 @@ var capturePage = {
       areaProtector.style.left =  - parseInt(capturePage.marginLeft) + 'px';
     }
     areaProtector.style.width =
-      Math.round((document.body.clientWidth + parseInt(capturePage.marginLeft)) / zoom) + 'px';
+      Math.round((document.body.scrollWidth + parseInt(capturePage.marginLeft)) / zoom) + 'px';
     areaProtector.style.height =
-      Math.round((document.body.clientHeight + parseInt(capturePage.marginTop)) / zoom) + 'px';
+      Math.round((document.body.scrollHeight + parseInt(capturePage.marginTop)) / zoom) + 'px';
     areaProtector.onclick = function() {
       event.stopPropagation();
       return false;
@@ -328,13 +328,14 @@ var capturePage = {
           var width = 0;
           var height = 0;
           var zoom = capturePage.getZoomLevel();
-          var viewWidth = Math.round(document.body.clientWidth / zoom);
-          var viewHeight = Math.round(document.body.clientHeight / zoom);
+          var viewWidth = Math.round(document.body.scrollWidth / zoom);
+          var viewHeight = Math.round(document.body.scrollHeight / zoom);
           if (xPosition > viewWidth) {
             xPosition = viewWidth;
           } else if (xPosition < 0) {
             xPosition = 0;
           }
+          console.log(yPosition, viewHeight);
           if (yPosition > viewHeight) {
             yPosition = viewHeight;
           } else if (yPosition < 0) {
